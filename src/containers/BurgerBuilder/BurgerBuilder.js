@@ -47,6 +47,10 @@ class BurgerBuilder extends Component {
     this.props.history.push('/checkout');
   };
 
+  signUpToPurchaseHandler = () => {
+    this.props.history.push('/auth?redirect=/checkout');
+  };
+
   render() {
     const disabledInfo = { ...this.props.ings };
     for (const key in disabledInfo) {
@@ -73,6 +77,8 @@ class BurgerBuilder extends Component {
             disabledInfo={disabledInfo}
             purchasable={this.updatePurchaseState(this.props.ings)}
             ordered={this.purchaseHandler}
+            signUpToPurchase={this.signUpToPurchaseHandler}
+            isAuth={this.props.isAuthenticated}
           />
         </Fragment>
       );
@@ -104,7 +110,8 @@ class BurgerBuilder extends Component {
 const mapStateToProps = state => ({
   ings: state.burgerBuilder.ingredients,
   totalPrice: state.burgerBuilder.totalPrice,
-  error: state.burgerBuilder.error
+  error: state.burgerBuilder.error,
+  isAuthenticated: state.auth.token !== null
 });
 
 export default connect(mapStateToProps, {

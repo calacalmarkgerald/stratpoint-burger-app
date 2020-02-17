@@ -1,23 +1,64 @@
-import React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { Route, Switch, Redirect } from 'react-router-dom';
+
+import asyncComponent from './hoc/asyncComponent/asyncComponent';
+
+import * as actions from './store/actions';
 
 import Layout from './components/Layout/Layout';
 import BurgerBuilder from './containers/BurgerBuilder/BurgerBuilder';
-import Checkout from './containers/Checkout/Checkout';
-import Orders from './containers/Orders/Orders';
+import Logout from './containers/auth/Logout/Logout';
 
-function App() {
-  return (
-    <div>
-      <Layout>
+const asyncCheckout = asyncComponent(() => {
+  return import('./containers/Checkout/Checkout');
+});
+
+const asyncAuth = asyncComponent(() => {
+  return import('./containers/auth/Auth');
+});
+
+const asyncOrders = asyncComponent(() => {
+  return import('./containers/Orders/Orders');
+});
+
+class App extends Component {
+  componentDidMount() {
+    this.props.authCheck();
+  }
+
+  render() {
+    let routes = (
+      <Switch>
+        <Route path='/auth' component={asyncAuth} />
+        <Route path='/' exact component={BurgerBuilder} />
+        <Redirect to='/' />
+      </Switch>
+    );
+
+    if (this.props.isAuthenticated) {
+      routes = (
         <Switch>
-          <Route path='/checkout' component={Checkout} />
-          <Route path='/orders' component={Orders} />
+          <Route path='/checkout' component={asyncCheckout} />
+          <Route path='/orders' component={asyncOrders} />
+          <Route path='/auth' component={asyncAuth} />
+          <Route path='/logout' component={Logout} />
           <Route path='/' exact component={BurgerBuilder} />
+          <Redirect to='/' />
         </Switch>
-      </Layout>
-    </div>
-  );
+      );
+    }
+
+    return (
+      <div>
+        <Layout>{routes}</Layout>
+      </div>
+    );
+  }
 }
 
-export default App;
+const mapStateToProps = state => ({
+  isAuthenticated: state.auth.token !== null
+});
+
+export default connect(mapStateToProps, { authCheck: actions.authCheck })(App);
