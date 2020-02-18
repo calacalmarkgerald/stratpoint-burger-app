@@ -13,9 +13,10 @@ import orderReducer from './store/reducers/order';
 import authReducer from './store/reducers/auth';
 
 const composeEnhancers =
-  process.env.NODE_ENV === 'development'
-    ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
-    : null || compose;
+  (typeof window !== 'undefined' &&
+    window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__) ||
+  compose;
+
 const middlewares = [thunk];
 
 const rootReducer = combineReducers({
